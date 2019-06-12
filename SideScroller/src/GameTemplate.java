@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 public class GameTemplate extends JPanel implements KeyListener,Runnable
 {
 	private float angle;
-	private int x = 0, y = 0, cloud1 = 0, cloud2 = 0, ground = 0, rocks = 0, sky = 0, witchCount = 0, witchHeight = 0, batCount = 0;
+	private int x = 0, y = 0, cloud1 = 0, cloud2 = 0, ground = 0, rocks = 0, sky = 0, witchCount = 0, witchHeight = 0, fireb = 0, fireballpos = 250;
 	private JFrame frame;
 	Thread t;
 	private boolean gameOn;
@@ -26,6 +26,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 	BufferedImage fireballRight;
 	BufferedImage[] fireRight = new BufferedImage[8];
 	ArrayList<BatObject> batList = new ArrayList<BatObject>();
+	ArrayList<FireballObject> fireList = new ArrayList<FireballObject>();
 	boolean restart=false,right=false;
 	int imgCount=0;
 	Polygon poly;
@@ -70,7 +71,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 				bat[i]= batImage.getSubimage(92*i, 0, 92, 94);
 			}
 			for(int i =0; i<8; i++) {
-				fireRight[i]= fireballRight.getSubimage(63*i, 0, 92, 94);
+				fireRight[i]= fireballRight.getSubimage(126*i, 0, 126, 124);
 			}
 			bg[0] = ImageIO.read(new File("layers\\sky.png"));
 			bg[1] = ImageIO.read(new File("layers\\rocks.png"));
@@ -85,7 +86,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		}
 //		bgs[0]=bg[0].getScaledInstance(1920, 250,Image.SCALE_DEFAULT);
 //		bgs[1]=bg[1].getScaledInstance(1920, 300,Image.SCALE_DEFAULT);
-//		bgs[2]=bg[2].getScaledInstance(1920, 500,Image.SCALE_SMOOTH);
+//		bgs[2]=bg[2].getScaledInstance(1920, 500,Image.SCALE_SMOOTH );
 
 		frame.addKeyListener(this);
 		frame.add(this);
@@ -166,8 +167,8 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 	
 		
 
-		g2d.drawImage(witch[witchCount],0,witchHeight,null);
-//		g2d.drawImage(bat[batCount], 600, witchHeight, null);
+		g2d.drawImage(witch[witchCount], 0, witchHeight,null);
+		g2d.drawImage(fireRight[fireb], fireballpos, witchHeight+100, null);
 		for(int i =0; i<batList.size(); i++) {
 			g2d.drawImage(bat[batList.get(i).getFrame()], batList.get(i).getX(), batList.get(i).getY(), null);
 			batList.get(i).setFrame(batList.get(i).getFrame()+1);
@@ -179,15 +180,12 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		
 
 	}
-	
-	public void batMaker(Graphics2D g2d, boolean active, int number) {
-		if(active) {
-			for(int i = 0; i<number; i++) {
-				BatObject batO = new BatObject();
-				batO.setFrame(1);
-			}
-		}
-		
+	public void testingfire() {
+		FireballObject tempFireObject = new FireballObject();
+		tempFireObject.setFrame(0);
+		tempFireObject.setX(600);
+		tempFireObject.setY((int)(Math.random()*500)+1);
+		fireList.add(tempFireObject);
 	}
 	public void testingbats() {
 		BatObject tempBatObject = new BatObject();
@@ -204,6 +202,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		ground-=2;
 		rocks-=1;
 		sky--;
+		fireballpos += 5;
 		
 		if (down && witchHeight<800) {
 			witchHeight += 5;
@@ -214,7 +213,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		
 		if(!skip) {
 			witchCount++;
-			batCount++;
+			fireb++;
 			skip = true;
 		}else {
 			skip = false;
@@ -223,8 +222,8 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		if(witchCount==12) {
 			witchCount=0;
 		}
-		if(batCount == 8) {
-			batCount = 0;
+		if(fireb == 8) {
+			fireb = 0;
 		}
 		if(x==-1920) {
 			x=0;
@@ -252,7 +251,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		if(key.getKeyCode()==39)
 		{
 			right = true;
-			testingbats();
+			//testingbats();
 //			refresh();
 		}
 		if(key.getKeyCode()==40) {
