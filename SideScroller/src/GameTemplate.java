@@ -4,6 +4,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.lang.*;
 import java.math.*;
+import java.util.ArrayList;
 import java.awt.image.*;
 import java.applet.*;
 import javax.swing.border.*;
@@ -11,7 +12,7 @@ import javax.imageio.ImageIO;
 public class GameTemplate extends JPanel implements KeyListener,Runnable
 {
 	private float angle;
-	private int x = 0, y = 0, cloud1 = 0, cloud2 = 0, ground = 0, rocks = 0, sky = 0, witchCount = 0, witchHeight = 0;
+	private int x = 0, y = 0, cloud1 = 0, cloud2 = 0, ground = 0, rocks = 0, sky = 0, witchCount = 0, witchHeight = 0, batCount = 0;
 	private JFrame frame;
 	Thread t;
 	private boolean gameOn;
@@ -20,6 +21,11 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 	BufferedImage[] bg = new BufferedImage[6];
 	BufferedImage witchImg;
 	BufferedImage[] witch = new BufferedImage[12];
+	BufferedImage batImage;
+	BufferedImage[] bat = new BufferedImage[4];
+	BufferedImage fireballRight;
+	BufferedImage[] fireRight = new BufferedImage[8];
+	ArrayList<BatObject> batList = new ArrayList<BatObject>();
 	boolean restart=false,right=false;
 	int imgCount=0;
 	Polygon poly;
@@ -37,7 +43,11 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		try {
 			guy = ImageIO.read(new File("Pictures\\st1.png"));
 			witchImg = ImageIO.read(new File("witch.png"));
-			//284 x 220
+			batImage = ImageIO.read(new File("bat.png"));
+			fireballRight = ImageIO.read(new File("more images\\fireballEditedRight.png"));
+			
+			//284 x 220 witch
+			//96  x  96 bat
 			int tempx=0;
 			int tempy=0;
 			for(int i = 0; i<4; i++) {
@@ -56,8 +66,12 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 				witch[i]= witchImg.getSubimage(tempx, tempy, 280, 220);
 				tempx+=280;
 			}
-			
-				
+			for(int i =0; i<4; i++) {
+				bat[i]= batImage.getSubimage(92*i, 0, 92, 94);
+			}
+			for(int i =0; i<8; i++) {
+				fireRight[i]= fireballRight.getSubimage(63*i, 0, 92, 94);
+			}
 			bg[0] = ImageIO.read(new File("layers\\sky.png"));
 			bg[1] = ImageIO.read(new File("layers\\rocks.png"));
 			bg[2] = ImageIO.read(new File("layers\\ground.png"));
@@ -90,16 +104,17 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 			if(gameOn)
 			{
 				//Math happens here!
-				if((down && right) || (up && right)) {
-					refresh();
-				}else if(down || right || up){
-					if(down || up)
-						refresh();
+//				if((down && right) || (up && right)) {
+//					refresh();
+//				}else 
+					//if(down || right || up){
+					//if(down || up)
+						//refresh();
 					if(right) 
 						refresh();
-				}else {
+				//}else {
 					refresh();
-				}
+			//}
 				
 				
 
@@ -152,11 +167,34 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		
 
 		g2d.drawImage(witch[witchCount],0,witchHeight,null);
+//		g2d.drawImage(bat[batCount], 600, witchHeight, null);
+		for(int i =0; i<batList.size(); i++) {
+			g2d.drawImage(bat[batList.get(i).getFrame()], batList.get(i).getX(), batList.get(i).getY(), null);
+			batList.get(i).setFrame(batList.get(i).getFrame()+1);
+		}
+		
 		g2d.setColor(Color.MAGENTA);
 		GradientPaint gp = new GradientPaint((float)0.0, (float)0.0, Color.BLUE, (float)500.0, (float)500, Color.WHITE, true);
 		g2d.setPaint(gp);
 		
 
+	}
+	
+	public void batMaker(Graphics2D g2d, boolean active, int number) {
+		if(active) {
+			for(int i = 0; i<number; i++) {
+				BatObject batO = new BatObject();
+				batO.setFrame(1);
+			}
+		}
+		
+	}
+	public void testingbats() {
+		BatObject tempBatObject = new BatObject();
+		tempBatObject.setFrame(0);
+		tempBatObject.setX(600);
+		tempBatObject.setY((int)(Math.random()*500)+1);
+		batList.add(tempBatObject);
 	}
 	
 	public void refresh() {
@@ -176,6 +214,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		
 		if(!skip) {
 			witchCount++;
+			batCount++;
 			skip = true;
 		}else {
 			skip = false;
@@ -184,7 +223,9 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		if(witchCount==12) {
 			witchCount=0;
 		}
-		
+		if(batCount == 8) {
+			batCount = 0;
+		}
 		if(x==-1920) {
 			x=0;
 		}
@@ -210,7 +251,8 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		System.out.println(key.getKeyCode());
 		if(key.getKeyCode()==39)
 		{
-			right = true;		
+			right = true;
+			testingbats();
 //			refresh();
 		}
 		if(key.getKeyCode()==40) {
@@ -220,8 +262,11 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 			up = true;
 		}
 		if(key.getKeyCode()==82)
-			restart=true;
-	}
+//			restart=true;
+			if(batList.size()>0) {
+				batList.remove((int)Math.random()*batList.size());
+			}
+		}
 	public void keyReleased(KeyEvent key)
 	{
 		if(key.getKeyCode()==39)
