@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 public class GameTemplate extends JPanel implements KeyListener,Runnable
 {
 	private float angle;
-	private int x = 0, y = 0, cloud1 = 0, cloud2 = 0, ground = 0, rocks = 0, sky = 0, witchCount = 0, witchHeight = 0, fireb = 0, fireballpos = 250;
+	private int x = 0, y = 0, cloud1 = 0, cloud2 = 0, ground = 0, rocks = 0, sky = 0, witchCount = 0, witchHeight = 0, fireballpos = 250, batTimer = 0;
 	private JFrame frame;
 	Thread t;
 	private boolean gameOn;
@@ -168,10 +168,13 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		
 
 		g2d.drawImage(witch[witchCount], 0, witchHeight,null);
-		g2d.drawImage(fireRight[fireb], fireballpos, witchHeight+100, null);
 		for(int i =0; i<batList.size(); i++) {
 			g2d.drawImage(bat[batList.get(i).getFrame()], batList.get(i).getX(), batList.get(i).getY(), null);
-			batList.get(i).setFrame(batList.get(i).getFrame()+1);
+		}
+		for(int i=0; i<fireList.size();i++) {
+			g2d.drawImage(fireRight[fireList.get(i).getFrame()], fireList.get(i).getX(), fireList.get(i).getY(), null);
+//			fireList.get(i).setFrame(fireList.get(i).getFrame()+1);
+//			fireList.get(i).setX(fireList.get(i).getX()+10);
 		}
 		
 		g2d.setColor(Color.MAGENTA);
@@ -180,18 +183,45 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		
 
 	}
+	
+	public void intersection() {
+		for(int x = 0; x<batList.size(); x++) {
+			for(int y = 0; y< fireList.size(); y++) {
+				if(fireList.size()>0) {
+					System.out.println(fireList.get(y).getX()+126);
+				}
+				if(batList.size()>0) {
+					System.out.println("\t"+batList.get(x).getX());
+				}
+				if(fireList.size()>0 && batList.size()>0) {
+					if(fireList.get(y).getX()+100 >= batList.get(x).getX() && fireList.get(y).getX() <= batList.get(x).getX()+92 && fireList.get(y)
+							.getY() + 120>= batList.get(x).getY() && fireList.get(y).getY() <= batList.get(x).getY()+94) {
+						batList.remove(x);
+						fireList.remove(y);
+						
+						//break;
+						//gameOn = false;
+					}
+				}
+			}
+		}
+	}
+	
+	
+	
 	public void testingfire() {
 		FireballObject tempFireObject = new FireballObject();
 		tempFireObject.setFrame(0);
-		tempFireObject.setX(600);
-		tempFireObject.setY((int)(Math.random()*500)+1);
+		tempFireObject.setX(250);
+		tempFireObject.setY(witchHeight);
 		fireList.add(tempFireObject);
 	}
 	public void testingbats() {
 		BatObject tempBatObject = new BatObject();
 		tempBatObject.setFrame(0);
-		tempBatObject.setX(600);
+		tempBatObject.setX(1700);
 		tempBatObject.setY((int)(Math.random()*500)+1);
+//		tempBatObject.setY(witchHeight);
 		batList.add(tempBatObject);
 	}
 	
@@ -202,7 +232,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		ground-=2;
 		rocks-=1;
 		sky--;
-		fireballpos += 5;
+		intersection();
 		
 		if (down && witchHeight<800) {
 			witchHeight += 5;
@@ -210,21 +240,32 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		if (up && witchHeight>0) {
 			witchHeight -= 5;	
 		}
-		
+		for(int i =0; i<batList.size(); i++) {
+			
+			batList.get(i).setFrame(batList.get(i).getFrame()+1);
+		}
+		for(int i=0; i<fireList.size();i++) {
+			
+			fireList.get(i).setFrame(fireList.get(i).getFrame()+1);
+			fireList.get(i).setX(fireList.get(i).getX()+5);
+		}
 		if(!skip) {
 			witchCount++;
-			fireb++;
+			
 			skip = true;
 		}else {
 			skip = false;
 		}
-		
+		if(batTimer == 200) {
+			testingbats();
+			batTimer = 0;
+		} else {
+			batTimer++;
+		}
 		if(witchCount==12) {
 			witchCount=0;
 		}
-		if(fireb == 8) {
-			fireb = 0;
-		}
+		
 		if(x==-1920) {
 			x=0;
 		}
@@ -251,6 +292,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		if(key.getKeyCode()==39)
 		{
 			right = true;
+			testingfire();
 			//testingbats();
 //			refresh();
 		}
