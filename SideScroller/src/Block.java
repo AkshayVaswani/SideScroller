@@ -1,6 +1,6 @@
 import java.awt.Rectangle;
 
-public class BatObject {
+public class Block {
 	private int frame;
 	private int x;
 	private int y;
@@ -17,9 +17,7 @@ public class BatObject {
 	}
 	
 	public void setFrame(int num) {
-		if(num == 4) {
-			num = 0;
-		}
+		
 		this.frame = num;
 	}
 	
@@ -40,7 +38,7 @@ public class BatObject {
 		this.x = x;
 	}
 	public Rectangle getRect() {
-		rect = new Rectangle(x, y, 92, 94);
+		rect = new Rectangle(x, y, 100, 100);
 		return rect;
 	}
 
@@ -75,9 +73,4 @@ public class BatObject {
 	public void setWiggleDown(int wiggleDown) {
 		this.wiggleDown = wiggleDown;
 	}
-
-
-
-
-
 }

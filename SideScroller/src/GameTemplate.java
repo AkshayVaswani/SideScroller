@@ -15,7 +15,11 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 	private JFrame frame;
 	Thread t;
 	private boolean gameOn;
+	File file;
+	BufferedReader br;
 	BufferedImage guy;
+	BufferedImage pumpkin;
+	ArrayList<Block> blockList = new ArrayList<Block>();
 	BufferedImage[] guys=new BufferedImage[11];
 	BufferedImage[] bg = new BufferedImage[6];
 	BufferedImage witchImg;
@@ -27,6 +31,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 	ArrayList<BatObject> batList = new ArrayList<BatObject>();
 	ArrayList<FireballObject> fireList = new ArrayList<FireballObject>();
 	HeroClass hero = new HeroClass();
+	String[][] board = new String[120][20];
 	int witchHP = 500;
 	boolean restart=false,right=false;
 	int imgCount=0;
@@ -44,9 +49,10 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		gameOn=true;
 
 		try {
+			file = new File("Level1.txt");
 			guy = ImageIO.read(new File("Pictures\\st1.png"));
-			witchImg = ImageIO.read(new File("witch.png"));
-			batImage = ImageIO.read(new File("bat.png"));
+			witchImg = ImageIO.read(new File("more images\\witch.png"));
+			batImage = ImageIO.read(new File("more images\\bat.png"));
 			fireballRight = ImageIO.read(new File("more images\\fireballEditedRight.png"));
 			hpBox = new Rectangle(200, 10, 1500, 50);
 			
@@ -76,14 +82,31 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 			for(int i =0; i<8; i++) {
 				fireRight[i]= fireballRight.getSubimage(126*i, 0, 126, 100);
 			}
+			pumpkin = ImageIO.read(new File("more images\\3.png"));
 			bg[0] = ImageIO.read(new File("layers\\sky.png"));
 			bg[1] = ImageIO.read(new File("layers\\rocks.png"));
 			bg[2] = ImageIO.read(new File("layers\\ground.png"));
 			bg[3] = ImageIO.read(new File("layers\\clouds_2.png"));
 			bg[4] = ImageIO.read(new File("layers\\clouds_1.png"));
 			
+			int tempx2=0, tempy2=0;
+			br = new BufferedReader(new FileReader(file));
+			String line;
+			while ((line = br.readLine()) != null)	//file reading
+			{
+				String[] values = line.split(",");
+	        	for (String str : values)
+	        	{
+	        		String str1 = str;
+	        		board[tempx2][tempy2]=str1;
+	        		System.out.println(board[tempx2][tempy2]);
+	        	}
+	        	tempy2=tempy2+1;
+			}
+			tempx2=tempx2+1;
 
-
+		     
+		    
 		}
 		catch (IOException e) {
 		}
@@ -135,7 +158,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 			}
 			try
 			{
-				t.sleep(20);
+				Thread.sleep(20);
 			}catch(InterruptedException e)
 			{
 			}
@@ -180,6 +203,10 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 			g2d.drawImage(bat[batList.get(i).getFrame()], batList.get(i).getX(), batList.get(i).getY(), null);
 			g2d.draw(batList.get(i).getRect());
 		}
+		for(int i =0; i<blockList.size(); i++) {
+			g2d.drawImage(pumpkin, blockList.get(i).getX(), blockList.get(i).getY(), null);
+			g2d.draw(blockList.get(i).getRect());
+		}
 		for(int i=0; i<fireList.size();i++) {
 			g2d.drawImage(fireRight[fireList.get(i).getFrame()], fireList.get(i).getX(), fireList.get(i).getY(), null);
 			g2d.draw(fireList.get(i).getRect());
@@ -200,8 +227,21 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 
 	}
 
-	public void healthBar() {
-		
+	public void blockMaker() {
+		Block tempBatObject = new Block();
+		tempBatObject.setFrame(0);
+		tempBatObject.setX(1700);
+		tempBatObject.setY((int)(Math.random()*500)+1);
+		tempBatObject.setInitY(tempBatObject.getY());
+//		if((int)(Math.random()*2)+1 == 1) {
+			tempBatObject.setDirection(true);
+//		}else {
+//			tempBatObject.setDirection(false);
+//		}
+		tempBatObject.setWiggleDown(tempBatObject.getInitY()+50);
+		tempBatObject.setWiggleUp(tempBatObject.getInitY()-50);
+//		tempBatObject.setY(witchHeight);
+		blockList.add(tempBatObject);
 	}
 	
 	
@@ -234,7 +274,13 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		}
 		
 	}
-	
+	public boolean isGameOver() {
+		if(hero.getHp() == 0) {
+			gameOn = false;
+			return true;
+		}
+		return false;
+	}
 	public boolean fbToBat(FireballObject obj1, BatObject obj2) {
 		if(obj1.getRect().intersects(obj2.getRect())) {
 			return true;
@@ -307,6 +353,24 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 				}
 			}
 		}
+		for(int i =0; i<blockList.size(); i++) {
+			Block temp = blockList.get(i);
+			
+			temp.setX(temp.getX()-3);
+			//System.out.println(i+" "+temp.isDirection()+" - "+temp.getWiggleDown() + " " + temp.getWiggleUp()+" "+temp.getY());
+
+			if(temp.isDirection()) {
+				temp.setY(temp.getY()-5);
+				if(temp.getY() <= temp.getWiggleUp()) {
+					temp.setDirection(false);
+				}
+			} else {
+				temp.setY(temp.getY()+5);
+				if(temp.getY() >= temp.getWiggleDown()) {
+					temp.setDirection(true);
+				}
+			}
+		}
 		for(int i=0; i<fireList.size();i++) {
 			
 			fireList.get(i).setFrame(fireList.get(i).getFrame()+1);
@@ -324,6 +388,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		} else {
 			batTimer++;
 		}
+		
 		if(x==-1920) {
 			x=0;
 		}
