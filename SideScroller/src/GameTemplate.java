@@ -34,6 +34,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 	Polygon poly2;
 	boolean down = false;
 	boolean up = false;
+	Rectangle hpBox;
 	
 	boolean skip = false;
 
@@ -47,6 +48,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 			witchImg = ImageIO.read(new File("witch.png"));
 			batImage = ImageIO.read(new File("bat.png"));
 			fireballRight = ImageIO.read(new File("more images\\fireballEditedRight.png"));
+			hpBox = new Rectangle(200, 10, 1500, 50);
 			
 			//284 x 220 witch
 			//96  x  96 bat
@@ -185,13 +187,24 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 //			fireList.get(i).setX(fireList.get(i).getX()+10);
 		}
 		
-		g2d.setColor(Color.MAGENTA);
-		GradientPaint gp = new GradientPaint((float)0.0, (float)0.0, Color.BLUE, (float)500.0, (float)500, Color.WHITE, true);
-		g2d.setPaint(gp);
+		
+		g2d.setColor(Color.black);
+		g2d.draw(hpBox);
+		g.setFont(new Font("TimesNewRoman", Font.BOLD, 30));
+		g2d.drawString("HP: " + hero.getHp(), 30, 50);
+		g2d.fillRect((int)hpBox.getX(), (int)hpBox.getY(), (int)hpBox.getWidth(), (int)hpBox.getHeight());
+		g2d.setColor(Color.cyan);
+		g2d.fillRect((int)hpBox.getX(), (int)hpBox.getY(), hero.getHp()*3, (int)hpBox.getHeight());
+	
 		
 
 	}
 
+	public void healthBar() {
+		
+	}
+	
+	
 	public void intersection() {
 		for(int x = 0; x<batList.size(); x++) {
 			for(int y = 0; y< fireList.size(); y++) {
@@ -212,7 +225,12 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 					}
 				}				
 			}
-		
+			if(batToWitch(batList.get(x), hero)) {
+				batList.remove(x);
+				if(x!=0) {
+					x--;
+				}
+			}
 		}
 		
 	}
@@ -223,7 +241,7 @@ public class GameTemplate extends JPanel implements KeyListener,Runnable
 		}
 		return false;
 	}
-	public boolean batToWitch(FireballObject obj1, HeroClass obj2) {
+	public boolean batToWitch(BatObject obj1, HeroClass obj2) {
 		if(obj1.getRect().intersects(obj2.getRect())) {
 			obj2.setHp(obj2.getHp()-50);
 			System.out.println(obj2.getHp());
